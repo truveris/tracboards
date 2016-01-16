@@ -1,0 +1,67 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+body {
+	font-size: 1vw;
+	background-color: #111;
+	color: #AAA;
+	font-family: "Press Start 2P";
+	line-height: 2vw;
+	width: 100%;
+}
+p {
+	font-size: 1vw;
+	text-transform: uppercase;
+	margin-top: 2vw;
+	letter-spacing: .3vw
+}
+ol {
+	padding: 0% 10% 10% 10%;
+}
+li {
+	margin-left: 1vw;
+	padding: .5vw 1vw .5vw 1vw;
+}
+h1, h2 {
+	text-align: center;
+	font-family: "Open Sans";
+}
+h1 {
+	margin-bottom: 0;
+	font-weight: 300;
+	font-size: 3vw;
+	padding: 1.5vw;
+}
+h2 {
+	font-size: 1.5vw;
+	margin-top: 0;
+	color: #666;
+	text-transform: uppercase;
+	letter-spacing: .3vw
+}
+.total {
+	font-size: 400%;
+	font-weight: bold;
+	text-align: center;
+	color: white;
+	padding: 3vw
+}
+.critical {
+	color: red;
+}
+.warning {
+	color: #fcb444;
+}
+.ok {
+	color: green;
+}
+.content {
+	font-size: 150%;
+	margin-left: 5%;
+}
+.pull-right {
+	float: right;
+	margin:0 -1vw 0 0;
+	padding: 0vw 2.5vw 0vw 2vw;
+}

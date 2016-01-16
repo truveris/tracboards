@@ -1,0 +1,70 @@
+#left {
+	position: absolute;
+	width: 49%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	border-right: 2vw solid #000;
+}
+#right {
+	position: absolute;
+	width: 49%;
+	height: 100%;
+	right: 0;
+	top: 0;
+}
+ol.leaders {
+	max-width: 40em;
+	padding: 0vw 0vw 0vw 5.5vw;
+	overflow-x: hidden;
+}
+ol.leaders li:before {
+	float: left;
+	width: 0;
+	color: #444;
+	white-space: nowrap;
+	content:
+	"....................................... "
+	"....................................... "
+	"....................................... "
+	"....................................... "
+}
+/* Remove the dots behind the names */
+ol.leaders span:first-child {
+	padding: 0;
+	background: #111
+}
+
+/* Give the first icons and items a color */
+#left ol.leaders li:first-child,
+#left .content > span:first-child {
+	color: red;
+}
+#right ol.leaders li:first-child,
+#right .content > span:first-child {
+	color: #fcb444;
+}
+
+ol.leaders span + span {
+	float: right;
+	margin:0 -1vw 0 0;
+	padding: 0vw 2.5vw 0vw 2vw;
+	background: #111
+}
+
+/* This is the totals table */
+#left table {
+	margin-left: auto;
+	margin-right: auto;
+}
+#left table td {
+	padding: 0 1vw;
+}
+
+.fa {
+	font-size: 3vw;
+	padding: 1vw;
+}
+.dim {
+	color: #666
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Defect Dashboard - Trac</title>
+
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="${href.chrome('/tracboards/js/defects.js')}"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" />
+    <link href='https://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css' />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css' />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+
+    <link rel="stylesheet" href="${href.chrome('/tracboards/css/base.css')}" />
+    <link rel="stylesheet" href="${href.chrome('/tracboards/css/defects.css')}" />
+</head>
+
+<body>
+    <div id="left">
+        <h1>Open Defects</h1>
+        <h2>opened defects per project</h2>
+        <table>
+            <tr>
+                <td><div class="total total-new"></div></td>
+                <td><div class="total total-triaged"></div></td>
+            </tr>
+        </table>
+        <div class="content">
+            <span><i class="fa fa-warning"></i></span>
+            <span><i class="fa fa-puzzle-piece dim"></i></span>
+            <span class="pull-right"><i class="fa fa-bug dim"></i></span>
+            <ol class="leaders"></ol>
+        </div>
+    </div>
+
+    <div id="right">
+        <h1>Bugfix Leaderboard</h1>
+        <h2>closed defects in current releases</h2>
+        <div class="total"></div>
+        <div class="content">
+            <span><i class="fa fa-trophy first"></i></span>
+            <span><i class="fa fa-user-secret dim"></i></span>
+            <span class="pull-right"><i class="fa fa-bug dim"></i></span>
+            <ol class="leaders"></ol>
+        </div>
+    </div>
+</body>
+</html>
