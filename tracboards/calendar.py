@@ -105,7 +105,6 @@ class CalendarDashboardJSON(Component):
                 if m:
                     date["name"] = m.group(1)
 
-            import pdb; pdb.set_trace()
             if date["date"] is not None and date["date"] >= parse_date("now"):
                 dates.append(date)
 
