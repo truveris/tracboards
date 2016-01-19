@@ -71,3 +71,12 @@ ol.leaders span + span {
 .dim {
 	color: #666
 }
+li {
+	margin-left: 1vw;
+	/** less pad between list items **/
+	padding: .2vw 1vw .5vw 1vw;
+}
+.total {
+    /** additional padding **/
+    padding: 3vw 3vw .2vw 3vw;
+}
