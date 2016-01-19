@@ -33,6 +33,10 @@ panel shows all the tickets that were closed in the active milestones (with a
 due date and no completion date) and a leader board of who closed these
 tickets.
 
+Accessible through::
+
+    https://your_trac_install/dashboard/defects
+
 Configuration options::
 
     [tracboards]
@@ -42,3 +46,28 @@ Configuration options::
 Screenshot:
 
 .. image:: https://s3.amazonaws.com/truveris-tracboards-assets/screenshots/defects.png
+
+Calendar Dashboard
+------------------
+The calendar dashboard lists all the milestones events defined in the
+configuration file.
+
+Accessible through::
+
+    https://your_trac_install/dashboard/calendar
+
+Configuration options::
+
+    [tracboards]
+    # Display name of the deployment event.
+    calendar.deployment.name = Deployment
+    # Font awesome icon used next to the name.
+    calendar.deployment.icon = rocket
+    # Color of the icon.
+    calendar.deployment.color = #445566
+    # Number of days before the due date.
+    calendar.deployment.delta = -5
+
+Screenshot:
+
+.. image:: https://s3.amazonaws.com/truveris-tracboards-assets/screenshots/calendar.png

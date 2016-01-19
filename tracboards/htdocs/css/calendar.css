@@ -1,0 +1,28 @@
+#events {
+	margin-top: 1vw;
+	margin-left: auto;
+	margin-right: auto;
+	width: 95%;
+}
+
+#events tr:nth-child(even) {background: #222}
+#events tr:nth-child(odd) {background: #333}
+
+#events tr.outline {
+	border-top: 2vw solid #111;
+}
+
+#events td {
+	font-family: "Open Sans";
+	font-size: 3vw;
+	line-height: 4vw;
+	font-weight: bold;
+	padding: 1vw;
+}
+#events td.icon {
+	width: 1vw;
+}
+
+h1 {
+	font-size: 5vw;
+}

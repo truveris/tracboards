@@ -1,0 +1,161 @@
+#!/bin/sh
+#
+# Create a basic virtualenv and sandboxed env.
+#
+
+components="Aphrodite Apollo Ares Artemis Athena Demeter Dyonisus Hermes Poseidon Zeus"
+milestones="31.0_Anubis 31.1_Horus 31.2_Osiris 31.3_Ra"
+
+die() {
+	echo "error: $*"
+	exit 1
+}
+
+if [ ! -z "$1" ]; then
+	echo "usage: `basename $0`"
+	exit 1
+fi
+
+if [ ! -e "setup.py" ]; then
+	die "you need to be running this from tracboards root folder"
+fi
+
+pip_install() {
+	if [ -z "$VIRTUAL_ENV" ]; then
+		die "please activate your virtualenv first"
+	fi
+
+	pip install --upgrade "trac"
+}
+
+create_sandbox() {
+	if [ -d "sandbox" ]; then
+		die "sandbox/ folder already exists, delete it first"
+	fi
+
+	mkdir -p sandbox/
+	trac-admin sandbox initenv "tracboards sandbox" sqlite:db/trac.db
+
+	# System setup
+	echo "system setup"
+	trac-admin sandbox permission add sandbox TRAC_ADMIN
+	trac-admin sandbox config set components "tracboards.*" enabled
+
+	# user: sandbox
+	# password: sandbox
+	echo 'sandbox:$apr1$HnW4h/..$TBHS.EWkk7X7Gmew0KQks/' > sandbox/htpasswd
+}
+
+create_components() {
+	echo "create components"
+	trac-admin sandbox component remove component1
+	trac-admin sandbox component remove component2
+	for c in $components; do
+		trac-admin sandbox component add "$c"
+	done
+}
+
+# pdate returns a YYYY-MM-DD date with a delta from today
+# $1 - delta in days
+pdate() {
+python -c "
+from datetime import datetime, timedelta
+dt = datetime.now() + timedelta(days=$1)
+print(dt.strftime('%Y-%m-%d'))
+"
+}
+
+create_milestones() {
+	echo "create milestones"
+	delta=-10
+	trac-admin sandbox milestone remove milestone1
+	trac-admin sandbox milestone remove milestone2
+	trac-admin sandbox milestone remove milestone3
+	trac-admin sandbox milestone remove milestone4
+
+	for m in $milestones; do
+		date=`pdate $delta`
+		trac-admin sandbox milestone add "$m" "$date"
+		if [ $delta -lt 0 ]; then
+			trac-admin sandbox milestone completed "$m" "$date"
+		fi
+		delta=$((delta+12))
+	done
+}
+
+create_events() {
+	echo "create events"
+	trac-admin sandbox config set tracboards "calendar.deployment.name" "Deployment"
+	trac-admin sandbox config set tracboards "calendar.deployment.delta" 7
+	trac-admin sandbox config set tracboards "calendar.deployment.icon" "rocket"
+	trac-admin sandbox config set tracboards "calendar.deployment.color" "#E56B4D"
+
+	trac-admin sandbox config set tracboards "calendar.commitment.name" "Commitment"
+	trac-admin sandbox config set tracboards "calendar.commitment.delta" -17
+	trac-admin sandbox config set tracboards "calendar.commitment.icon" "thumbs-up"
+	trac-admin sandbox config set tracboards "calendar.commitment.color" "#5BB76D"
+
+	trac-admin sandbox config set tracboards "calendar.code_freeze.name" "Code Freeze"
+	trac-admin sandbox config set tracboards "calendar.code_freeze.delta" -6
+	trac-admin sandbox config set tracboards "calendar.code_freeze.icon" "lock"
+	trac-admin sandbox config set tracboards "calendar.code_freeze.color" "#8CCFE3"
+
+	trac-admin sandbox config set tracboards "calendar.end_of_qa.name" "End of QA"
+	trac-admin sandbox config set tracboards "calendar.end_of_qa.delta" 0
+	trac-admin sandbox config set tracboards "calendar.end_of_qa.icon" "bug"
+	trac-admin sandbox config set tracboards "calendar.end_of_qa.color" "#FCB444"
+}
+
+
+create_defects() {
+	echo "create tickets"
+	echo "
+	WITH
+		s(name) AS (
+			SELECT 'new'
+			UNION SELECT 'assigned'
+			UNION SELECT 'closed'
+		),
+		
+		o(name) AS (
+			SELECT 'john'
+			UNION SELECT 'james'
+			UNION SELECT 'robert'
+			UNION SELECT 'mary'
+			UNION SELECT 'susan'
+			UNION SELECT 'nancy'
+		),
+		
+		everything AS (
+			SELECT c.name, m.name, s.name, o.name
+			FROM component c
+			CROSS JOIN milestone m
+			CROSS JOIN s
+			CROSS JOIN o
+		),
+		
+		selection AS (
+			SELECT *
+			FROM everything
+			ORDER BY random()
+			LIMIT 200
+		)
+		
+		INSERT INTO ticket (type, component, milestone, status, owner)
+		SELECT 'defect', *
+		FROM selection;
+	" | sqlite3 sandbox/db/trac.db
+}
+
+install_plugin() {
+	echo "installing plugin in sandbox mode"
+	python setup.py develop -mxd sandbox/plugins/
+}
+
+pip_install
+create_sandbox
+create_components
+create_milestones
+create_events
+create_defects
+install_plugin

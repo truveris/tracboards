@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ ! -r "setup.py" ]; then
+	echo "error: please run this from the package root (where setup.py lives)."
+	exit 100
+fi
+
+if [ ! -d "sandbox" ]; then
+	echo "error: sandbox/ does not exist."
+	exit 101
+fi
+
+tracd sandbox \
+	--port=5010 \
+	--single-env \
+	--auto-reload \
+	--basic-auth=sandbox,sandbox/htpasswd,sandbox
+
