@@ -14,11 +14,13 @@ from trac.ticket import model
 from trac.util.datefmt import parse_date
 
 from providers import TemplateProvider
+from utils import safe_date_replace, format_date
 
 
 re_date = re.compile(r".*Date: ([-/\d]+)$")
 re_icon = re.compile(r".*Icon: ([-\w]+)$")
 re_color = re.compile(r".*Color: ([#\w]+)$")
+re_frequency = re.compile(r".*Frequency: (\w+)$")
 re_title = re.compile(r"^= ([\w\s()]+) =$")
 re_name = re.compile(r".*Name: ([-:()\s\w]+)$")
 
@@ -27,8 +29,12 @@ class CalendarDashboardJSON(Component):
 
     implements(IRequestHandler)
 
-    def get_events(self):
-        events = {}
+    # Milestone event methods
+
+    def get_event_templates(self):
+        """Fetch the event templates from the configuration file."""
+
+        templates = {}
 
         for key, value in self.env.config.options("tracboards"):
             if not key.startswith("calendar."):
@@ -39,112 +45,158 @@ class CalendarDashboardJSON(Component):
                 self.env.log.warn("invalid calendar key: {}".format(key))
                 continue
 
-            _, event_name, key = tokens
-            event = events.setdefault(event_name, {})
+            _, name, key = tokens
+            t = templates.setdefault(name, {})
             if key == "delta":
                 value = int(value)
-            event[key] = value
+            t[key] = value
 
-        return events
-
-    def get_milestone_event_dates(self):
-        dates = []
-
-        events = self.get_events()
-
-        for milestone in self.get_milestones():
-            for event_key, event in events.items():
-                delta = timedelta(days=event.get("delta", 0))
-                event_date = milestone.due + delta
-
-                if event_date.date() < datetime.now().date():
-                    continue
-
-                dates.append({
-                    "name": event.get("name", "Unnamed event"),
-                    "icon": event.get("icon", "flag"),
-                    "class": event_key,
-                    "color": event.get("color", "white"),
-                    "milestone": milestone.name,
-                    "date": event_date,
-                })
-
-        return dates
-
-    def get_wiki_event_dates(self):
-        """Try to fetch events from the wiki as well."""
-        dates = []
-
-        for page in WikiSystem(self.env).get_pages("Events/"):
-            page = WikiPage(self.env, page)
-            if not page.exists:
-                continue
-
-            date = {
-                "name": page.name.split("/", 1).pop(),
-                "icon": "flag",
-                "color": "white",
-                "milestone": "",
-                "class": page.name.split("/").pop().lower(),
-            }
-
-            for line in page.text.splitlines():
-                m = re_date.match(line)
-                if m:
-                    date["date"] = parse_date(m.group(1))
-                m = re_icon.match(line)
-                if m:
-                    date["icon"] = m.group(1)
-                m = re_color.match(line)
-                if m:
-                    date["color"] = m.group(1)
-                m = re_name.match(line)
-                if m:
-                    date["name"] = m.group(1)
-                m = re_title.match(line)
-                if m:
-                    date["name"] = m.group(1)
-
-            if date["date"] is not None and date["date"] >= parse_date("now"):
-                dates.append(date)
-
-        return dates
-
-    def get_event_dates(self):
-        event_dates = sorted(
-            self.get_milestone_event_dates() + self.get_wiki_event_dates(),
-            key=lambda ed: ed["date"]
-        )
-
-        for ed in event_dates:
-            ed["date"] = self.format_date(ed["date"])
-
-        return event_dates
-
-    def format_date(self, d):
-        today = datetime.now().date()
-        tomorrow = today + timedelta(days=1)
-        if d.date() == today:
-            return "Today"
-        if d.date() == tomorrow:
-            return "Tomorrow"
-        if d.date() - today < timedelta(days=6):
-            return d.strftime("%A")
-        return d.strftime("%a %e")
+        return templates
 
     def get_milestones(self):
         milestones = model.Milestone.select(self.env, include_completed=False)
         return [m for m in milestones if m.due is not None]
 
+    def get_milestone_events(self):
+        events = []
+
+        templates = self.get_event_templates()
+
+        for milestone in self.get_milestones():
+            for key, template in templates.items():
+                delta = timedelta(days=template.get("delta", 0))
+                date = milestone.due + delta
+
+                if date.date() < datetime.now().date():
+                    continue
+
+                events.append({
+                    "name": template.get("name", "Unnamed event"),
+                    "icon": template.get("icon", "flag"),
+                    "class": key,
+                    "color": template.get("color", "white"),
+                    "milestone": milestone.name,
+                    "date": date,
+                })
+
+        return events
+
+    # Wiki event methods
+
+    def get_raw_event_from_page(self, page):
+        """Return an event as defined in the page.
+
+        This function does not expand an event into multiple based on
+        frequency, it only returns the values as-is.
+
+        """
+        event = {
+            "name": page.name.split("/", 1).pop(),
+            "icon": "flag",
+            "color": "white",
+            "milestone": "",
+            "class": page.name.split("/").pop().lower(),
+        }
+
+        for line in page.text.splitlines():
+            m = re_date.match(line)
+            if m:
+                event["date"] = parse_date(m.group(1))
+
+            m = re_icon.match(line)
+            if m:
+                event["icon"] = m.group(1)
+
+            m = re_color.match(line)
+            if m:
+                event["color"] = m.group(1)
+
+            m = re_name.match(line)
+            if m:
+                event["name"] = m.group(1)
+
+            m = re_title.match(line)
+            if m:
+                event["name"] = m.group(1)
+
+            m = re_frequency.match(line)
+            if m:
+                frequency = m.group(1)
+                if frequency in ("yearly", "monthly"):
+                    event["frequency"] = frequency
+
+        return event
+
+    def expand_event(self, event, frequency):
+        events = []
+
+        this_year = datetime.now().year
+        start_year = max(this_year, event["date"].year)
+        end_year = this_year + 1
+
+        if frequency == "yearly":
+            for year in range(start_year, end_year):
+                new_event = event.copy()
+                new_event["date"] = safe_date_replace(
+                        event["date"], year=year)
+                events.append(new_event)
+        elif frequency == "monthly":
+            for year in range(start_year, end_year):
+                for month in range(1, 13):
+                    new_event = event.copy()
+                    new_event["date"] = safe_date_replace(
+                            event["date"], year=year)
+                    events.append(new_event)
+
+        return events
+
+    def get_events_from_page(self, page):
+        event = self.get_raw_event_from_page(page)
+        if event["date"] is None:
+            return []
+
+        frequency = event.get("frequency")
+        if frequency:
+            return self.expand_event(event, frequency)
+
+        if event["date"] < parse_date("now"):
+            return []
+
+        return [event]
+
+    def get_wiki_pages(self):
+        """Return all the wiki page instances in the Events/ namespace."""
+        wiki_pages = []
+        for page in WikiSystem(self.env).get_pages("Events/"):
+            page = WikiPage(self.env, page)
+            if not page.exists:
+                continue
+            wiki_pages.append(page)
+        return wiki_pages
+
+    def get_wiki_events(self):
+        """Try to fetch events from the wiki as well."""
+        pages = self.get_wiki_pages()
+        return sum([self.get_events_from_page(p) for p in pages], [])
+
+    def get_events(self):
+        events = sorted(self.get_milestone_events() + self.get_wiki_events(),
+                        key=lambda e: e["date"])
+
+        for event in events:
+            event["date"] = format_date(event["date"])
+
+        return events
+
     # IRequestHandler methods
+
     def match_request(self, req):
         return req.path_info == "/dashboard/calendar.json"
 
     def process_request(self, req):
         content = {
-            "event_dates": self.get_event_dates(),
+            "events": self.get_events(),
         }
-
         req.send(json.dumps(content), "application/json")
 
 
@@ -153,6 +205,7 @@ class CalendarDashboard(TemplateProvider):
     implements(IRequestHandler)
 
     # IRequestHandler methods
+
     def match_request(self, req):
         return req.path_info == "/dashboard/calendar"
 

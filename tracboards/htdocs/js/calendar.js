@@ -5,8 +5,8 @@ function refreshData() {
         $("#events").empty();
         $("#today").html((new Date()).toDateString());
 
-        for (var i = 0; i < data.event_dates.length; i++) {
-            var e = data.event_dates[i];
+        for (var i = 0; i < data.events.length; i++) {
+            var e = data.events[i];
             var rowClasses = [];
 
             if (e["class"])

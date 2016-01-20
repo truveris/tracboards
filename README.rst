@@ -49,8 +49,9 @@ Screenshot:
 
 Calendar Dashboard
 ------------------
-The calendar dashboard lists all the milestones events defined in the
-configuration file.
+The calendar dashboard lists milestones events based on templates defined in
+the configuration file.  You can also define events in the Trac wiki using
+specific key words.
 
 Accessible through::
 
@@ -67,6 +68,27 @@ Configuration options::
     calendar.deployment.color = #445566
     # Number of days before the due date.
     calendar.deployment.delta = -5
+
+Wiki Events will be retrieved from any pages within the ``Events/`` namespace
+that contain the right meta data.  The ``Date:`` setting is mandatory, all the
+others are optional::
+
+    - Date: 2016-01-05
+    - Icon: birthday-cake
+    - Color: green
+
+The bullet-list style is optional, you can also put that information in a
+comment block.  Each of these options need to be on their own line, they are
+case sensitive.  If an event is recurring, you can add the ``Frequency:``
+option::
+
+    - Date: 2010-07-14
+    - Frequency: yearly
+    - Icon: birthday-cake
+    - Color: red
+
+By default the title of the page (``= Title =``) will be used as event name,
+you can override that by adding ``Name:`` in the meta data.
 
 Screenshot:
 
