@@ -130,7 +130,7 @@ class CalendarDashboardJSON(Component):
             return "Tomorrow"
         if d.date() - today < timedelta(days=6):
             return d.strftime("%A")
-        return d.strftime("%a %e")
+        return d.strftime("%a %m/%e")
 
     def get_milestones(self):
         milestones = model.Milestone.select(self.env, include_completed=False)
