@@ -20,6 +20,7 @@ setup(
     author_email="engineering@truveris.com",
     url="http://github.com/truveris/tracboards",
     packages=find_packages(exclude=["*.tests*"]),
+    include_package_data=True,
     license="ISC License",
     install_requires=[
     ],
