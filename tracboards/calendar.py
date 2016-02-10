@@ -159,7 +159,7 @@ class CalendarDashboardJSON(Component):
         if frequency:
             return self.expand_event(event, frequency)
 
-        if event["date"] < parse_date("now"):
+        if event["date"].date() < parse_date("now").date():
             return []
 
         return [event]
