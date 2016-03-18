@@ -12,6 +12,10 @@
 	border-top: 2vw solid #111;
 }
 
+#events tr.header {
+    background: #111
+}
+
 #events td {
 	font-family: "Open Sans";
 	font-size: 3vw;
@@ -19,9 +23,17 @@
 	font-weight: bold;
 	padding: 1vw;
 }
+
 #events td.icon {
 	width: 1vw;
 }
+
+#events td.group {
+    font-family: "Open Sans";
+	font-size: 2.5vw;
+	line-height: 3vw;
+}
+
 
 h1 {
 	font-size: 5vw;

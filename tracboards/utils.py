@@ -21,8 +21,8 @@ def format_date(d):
     tomorrow = today + timedelta(days=1)
     if d.date() == today:
         return "Today"
-    if d.date() == tomorrow:
+    elif d.date() == tomorrow:
         return "Tomorrow"
-    if d.date() - today < timedelta(days=6):
+    elif d.strftime("%U") == today.strftime("%U") and d.year == today.year:
         return d.strftime("%A")
-    return d.strftime("%a %e")
+    return d.strftime("%a %e %b")
