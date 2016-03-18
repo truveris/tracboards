@@ -67,8 +67,23 @@ class CalendarDashboardJSON(Component):
                 delta = timedelta(days=template.get("delta", 0))
                 date = milestone.due + delta
 
-                if date.date() < datetime.now().date():
+                now = datetime.now().date()
+
+                if date.date() < now:
                     continue
+
+                if date.date() == now:
+                    group = "Today"
+                    show_header = False
+                elif date.strftime("%U") == now.strftime("%U") and date.year == now.year:
+                    group = "Later This Week"
+                    show_header = False
+                elif date.month == now.month:
+                    group = "Later This Month"
+                    show_header = True
+                else:
+                    group = "Future"
+                    show_header = True
 
                 events.append({
                     "name": template.get("name", "Unnamed event"),
@@ -77,6 +92,8 @@ class CalendarDashboardJSON(Component):
                     "color": template.get("color", "white"),
                     "milestone": milestone.name,
                     "date": date,
+                    "group": group,
+                    "showHeader" : show_header
                 })
 
         return events

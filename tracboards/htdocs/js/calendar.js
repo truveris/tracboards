@@ -1,6 +1,6 @@
 function refreshData() {
     $.getJSON("/dashboard/calendar.json", function(data) {
-        var previousDate = "unknown";
+        var previousGroup = "unknown";
 
         $("#events").empty();
         $("#today").html((new Date()).toDateString());
@@ -12,8 +12,16 @@ function refreshData() {
             if (e["class"])
                 rowClasses.push(e["class"]);
 
-            if (previousDate == "Today" && e["date"] != previousDate)
-                rowClasses.push("outline");
+            if (e["group"] != previousGroup && e["showHeader"])
+                $("#events").append(
+                    $("<tr/>", {"class": "header outline"}).append(
+                        $("<td/>", {"class": "group", "html": e["group"]}),
+                        $("<td/>"),
+                        $("<td/>"),
+                        $("<td/>")
+                    )
+                );
+
 
             $("#events").append(
                 $("<tr/>", {"class": rowClasses.join(" ")}).append(
@@ -27,7 +35,7 @@ function refreshData() {
                 )
             );
 
-            previousDate = e["date"];
+            previousGroup = e["group"];
         }
     });
 }
