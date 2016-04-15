@@ -97,14 +97,17 @@ Screenshot:
 Sandbox setup
 -------------
 To easily run Trac + tracboards locally, do the following:
-    1. Install Python
-    2. Install virtualenv: https://virtualenv.pypa.io/en/latest/
-    3. From the root source directory, in a shell, create a virtual environment:
-        virtualenv venv
-    4. Activate the virtual environment:
-        . venv/bin/activate
-    5. From that same directory, now run /tools/sandbox-make
-    6. Then run /tools/sandbox-serve
-    7. As the serve output notes, you can now access the sandbox Trac instance at: http://127.0.0.1:5010
+
+1. Install Python
+2. Install virtualenv: https://virtualenv.pypa.io/en/latest/
+3. From the root source directory, in a shell, create a virtual environment:
+    `virtualenv venv`
+4. Activate the virtual environment:
+    `. ./venv/bin/activate`
+5. From that same directory, now run:
+    `./tools/sandbox-make`
+6. Then run:
+    `./tools/sandbox-serve`
+7. As the serve output notes, you can now access the sandbox Trac instance at: http://127.0.0.1:5010
 
 Note that the created username and password pair is: sandbox/sandbox

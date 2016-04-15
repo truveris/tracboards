@@ -13,7 +13,7 @@ except IOError:
     README = CHANGES = ""
 
 setup(
-    name="tracboards", version="0.2.0",
+    name="tracboards", version="0.2.1",
     description="Trac dashboards",
     long_description=README + "\n\n" + CHANGES,
     author="Truveris Inc.",

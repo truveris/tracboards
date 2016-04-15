@@ -67,24 +67,8 @@ class CalendarDashboardJSON(Component):
                 delta = timedelta(days=template.get("delta", 0))
                 date = milestone.due + delta
 
-                now = datetime.now().date()
-
-                if date.date() < now:
+                if date.date() < datetime.now().date():
                     continue
-
-                if date.date() == now:
-                    group = "Today"
-                    show_header = False
-                elif date.strftime("%U") == now.strftime("%U") and date.year == now.year:
-                    group = "Later This Week"
-                    show_header = False
-                elif date.month == now.month:
-                    group = "Later This Month"
-                    show_header = True
-                else:
-                    group = "Future"
-                    show_header = True
-
                 events.append({
                     "name": template.get("name", "Unnamed event"),
                     "icon": template.get("icon", "flag"),
@@ -92,8 +76,6 @@ class CalendarDashboardJSON(Component):
                     "color": template.get("color", "white"),
                     "milestone": milestone.name,
                     "date": date,
-                    "group": group,
-                    "showHeader" : show_header
                 })
 
         return events
@@ -147,9 +129,9 @@ class CalendarDashboardJSON(Component):
     def expand_event(self, event, frequency):
         events = []
 
-        this_year = datetime.now().year
-        start_year = max(this_year, event["date"].year)
-        end_year = this_year + 1
+        today = parse_date("now").date()
+        start_year = max(today.year, event["date"].year)
+        end_year = today.year + 1
 
         if frequency == "yearly":
             for year in range(start_year, end_year):
@@ -164,6 +146,8 @@ class CalendarDashboardJSON(Component):
                     new_event["date"] = safe_date_replace(
                             event["date"], year=year)
                     events.append(new_event)
+
+        events = [e for e in events if e["date"].date() > today]
 
         return events
 
@@ -201,7 +185,24 @@ class CalendarDashboardJSON(Component):
                         key=lambda e: e["date"])
 
         for event in events:
-            event["date"] = format_date(event["date"])
+            today = datetime.now().date()
+
+            if event["date"].date() == today:
+                group = None
+            elif event["date"].date() == today + timedelta(days=1):
+                group = "Tomorrow"
+            elif (event["date"].strftime("%U") == today.strftime("%U")
+                  and event["date"].year == today.year):
+                group = "Later This Week"
+            elif event["date"].month == today.month:
+                group = "Later This Month"
+            else:
+                group = "Future"
+
+            event.update({
+                "date": format_date(event["date"]),
+                "group": group,
+            })
 
         return events
 

@@ -12,7 +12,7 @@ function refreshData() {
             if (e["class"])
                 rowClasses.push(e["class"]);
 
-            if (e["group"] != previousGroup && e["showHeader"])
+            if (e["group"] != previousGroup && e["group"] !== null) {
                 $("#events").append(
                     $("<tr/>", {"class": "header outline"}).append(
                         $("<td/>", {"class": "group", "html": e["group"]}),
@@ -21,6 +21,7 @@ function refreshData() {
                         $("<td/>")
                     )
                 );
+            }
 
 
             $("#events").append(
