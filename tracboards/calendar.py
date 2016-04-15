@@ -191,9 +191,12 @@ class CalendarDashboardJSON(Component):
                 group = None
             elif event["date"].date() == today + timedelta(days=1):
                 group = "Tomorrow"
-            elif (event["date"].strftime("%U") == today.strftime("%U")
-                  and event["date"].year == today.year):
-                group = "Later This Week"
+            elif (event["date"].isocalendar()[1] == today.isocalendar()[1] and
+                  event["date"].year == today.year):
+                group = "This Week"
+            elif (event["date"].isocalendar()[1] == today.isocalendar()[1] + 1 and
+                  event["date"].year == today.year):
+                group = "Next Week"
             elif event["date"].month == today.month:
                 group = "Later This Month"
             else:
