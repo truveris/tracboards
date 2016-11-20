@@ -25,29 +25,35 @@ class DefectDashboardJSON(Component):
     def process_request(self, req):
         db = self.env.get_db_cnx()
 
-        # All the opened defects by component, regardless of the release.
+        # All the opened defects by component, in current releases.
         cursor = db.cursor()
         cursor.execute("""
             SELECT coalesce(component, '?!?'), count(*)
             FROM ticket t
+                LEFT JOIN milestone m ON t.milestone = m.name
             WHERE type = %s
+                AND m.due != 0
+                AND m.completed = 0
                 AND status = 'new'
             GROUP BY 1
         """, (self.ticket_type,))
         new_opened_by_component = dict(cursor)
 
-        # All the opened defects by component, regardless of the release.
+        # All the opened defects by component, in current releases.
         cursor = db.cursor()
         cursor.execute("""
             SELECT coalesce(component, '?!?'), count(*)
             FROM ticket t
+                LEFT JOIN milestone m ON t.milestone = m.name
             WHERE type = %s
+                AND m.due != 0
+                AND m.completed = 0
                 AND status NOT IN ('new', 'closed')
             GROUP BY 1
         """, (self.ticket_type,))
         triaged_opened_by_component = dict(cursor)
 
-        # All the closed defect by owner in the current releases.
+        # All the closed defect by owner, in current releases.
         cursor = db.cursor()
         cursor.execute(r"""
             SELECT coalesce(owner, '?!?'), count(*)
@@ -57,6 +63,7 @@ class DefectDashboardJSON(Component):
                 AND m.due != 0
                 AND m.completed = 0
                 AND status = 'closed'
+                AND resolution = 'fixed'
             GROUP BY 1
         """, (self.ticket_type,))
         closed_by_owner = dict(cursor)
