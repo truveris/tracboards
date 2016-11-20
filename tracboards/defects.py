@@ -53,6 +53,21 @@ class DefectDashboardJSON(Component):
         """, (self.ticket_type,))
         triaged_opened_by_component = dict(cursor)
 
+        # All high priority defects.
+        cursor = db.cursor()
+        cursor.execute("""
+            SELECT count(*)
+            FROM ticket t
+                LEFT JOIN enum p ON p.name = t.priority AND p.type = 'priority'
+                LEFT JOIN milestone m ON t.milestone = m.name
+            WHERE t.type = %s
+                AND m.due != 0
+                AND m.completed = 0
+                AND status != 'closed'
+                AND p.value::int < 4
+        """, (self.ticket_type,))
+        blocker_count = list(cursor)[0][0]
+
         # All the closed defect by owner, in current releases.
         cursor = db.cursor()
         cursor.execute(r"""
@@ -72,6 +87,7 @@ class DefectDashboardJSON(Component):
             "new_opened_by_component": new_opened_by_component,
             "triaged_opened_by_component": triaged_opened_by_component,
             "closed_by_owner": closed_by_owner,
+            "blocker_count": blocker_count,
         }
         req.send(json.dumps(content), "application/json")
 

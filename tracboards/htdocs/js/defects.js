@@ -30,6 +30,7 @@ function refreshData() {
         var newOpenedByComponent = data["new_opened_by_component"];
         var triagedOpenedByComponent = data["triaged_opened_by_component"];
         var closedByOwner = data["closed_by_owner"];
+        var blockerCount = data["blocker_count"];
 
         var totalTriagedDefects = total(triagedOpenedByComponent);
         var totalNewDefects = total(newOpenedByComponent);
@@ -41,6 +42,11 @@ function refreshData() {
             totalClass = "ok";
         }
 
+        $("#left .total-blockers")
+            .empty()
+            .append($("<div/>",{
+                "html": blockerCount + "<p>blocker</p>"
+            }));
         $("#left .total-new")
             .empty()
             .append($("<div/>",{
