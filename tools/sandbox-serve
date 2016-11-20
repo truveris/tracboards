@@ -14,5 +14,5 @@ tracd sandbox \
 	--port=5010 \
 	--single-env \
 	--auto-reload \
-	--basic-auth=sandbox,sandbox/htpasswd,sandbox
+	--basic-auth=sandbox,sandbox/htpasswd,sandbox "$@"
 
