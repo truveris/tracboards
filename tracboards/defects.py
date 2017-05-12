@@ -23,65 +23,67 @@ class DefectDashboardJSON(Component):
         return req.path_info == "/dashboard/defects.json"
 
     def process_request(self, req):
-        db = self.env.get_db_cnx()
+        # All the opened defects by component, in current releases.
+        with self.env.db_query as db:
+            cursor = db.cursor()
+            cursor.execute("""
+                SELECT coalesce(component, '?!?'), count(*)
+                FROM ticket t
+                    LEFT JOIN milestone m ON t.milestone = m.name
+                WHERE type = %s
+                    AND m.due != 0
+                    AND m.completed = 0
+                    AND status = 'new'
+                GROUP BY 1
+            """, (self.ticket_type,))
+            new_opened_by_component = dict(cursor)
 
         # All the opened defects by component, in current releases.
-        cursor = db.cursor()
-        cursor.execute("""
-            SELECT coalesce(component, '?!?'), count(*)
-            FROM ticket t
-                LEFT JOIN milestone m ON t.milestone = m.name
-            WHERE type = %s
-                AND m.due != 0
-                AND m.completed = 0
-                AND status = 'new'
-            GROUP BY 1
-        """, (self.ticket_type,))
-        new_opened_by_component = dict(cursor)
-
-        # All the opened defects by component, in current releases.
-        cursor = db.cursor()
-        cursor.execute("""
-            SELECT coalesce(component, '?!?'), count(*)
-            FROM ticket t
-                LEFT JOIN milestone m ON t.milestone = m.name
-            WHERE type = %s
-                AND m.due != 0
-                AND m.completed = 0
-                AND status NOT IN ('new', 'closed')
-            GROUP BY 1
-        """, (self.ticket_type,))
-        triaged_opened_by_component = dict(cursor)
+        with self.env.db_query as db:
+            cursor = db.cursor()
+            cursor.execute("""
+                SELECT coalesce(component, '?!?'), count(*)
+                FROM ticket t
+                    LEFT JOIN milestone m ON t.milestone = m.name
+                WHERE type = %s
+                    AND m.due != 0
+                    AND m.completed = 0
+                    AND status NOT IN ('new', 'closed')
+                GROUP BY 1
+            """, (self.ticket_type,))
+            triaged_opened_by_component = dict(cursor)
 
         # All high priority defects.
-        cursor = db.cursor()
-        cursor.execute("""
-            SELECT count(*)
-            FROM ticket t
-                LEFT JOIN enum p ON p.name = t.priority AND p.type = 'priority'
-                LEFT JOIN milestone m ON t.milestone = m.name
-            WHERE t.type = %s
-                AND m.due != 0
-                AND m.completed = 0
-                AND status != 'closed'
-                AND p.value::int < 4
-        """, (self.ticket_type,))
-        blocker_count = list(cursor)[0][0]
+        with self.env.db_query as db:
+            cursor = db.cursor()
+            cursor.execute("""
+                SELECT count(*)
+                FROM ticket t
+                    LEFT JOIN enum p ON p.name = t.priority AND p.type = 'priority'
+                    LEFT JOIN milestone m ON t.milestone = m.name
+                WHERE t.type = %s
+                    AND m.due != 0
+                    AND m.completed = 0
+                    AND status != 'closed'
+                    AND p.value::int < 4
+            """, (self.ticket_type,))
+            blocker_count = list(cursor)[0][0]
 
         # All the closed defect by owner, in current releases.
-        cursor = db.cursor()
-        cursor.execute(r"""
-            SELECT coalesce(owner, '?!?'), count(*)
-            FROM ticket t
-                LEFT JOIN milestone m ON t.milestone = m.name
-            WHERE type = %s
-                AND m.due != 0
-                AND m.completed = 0
-                AND status = 'closed'
-                AND resolution = 'fixed'
-            GROUP BY 1
-        """, (self.ticket_type,))
-        closed_by_owner = dict(cursor)
+        with self.env.db_query as db:
+            cursor = db.cursor()
+            cursor.execute(r"""
+                SELECT coalesce(owner, '?!?'), count(*)
+                FROM ticket t
+                    LEFT JOIN milestone m ON t.milestone = m.name
+                WHERE type = %s
+                    AND m.due != 0
+                    AND m.completed = 0
+                    AND status = 'closed'
+                    AND resolution = 'fixed'
+                GROUP BY 1
+            """, (self.ticket_type,))
+            closed_by_owner = dict(cursor)
 
         content = {
             "new_opened_by_component": new_opened_by_component,
