@@ -35,7 +35,12 @@ ol.leaders li:before {
 /* Remove the dots behind the names */
 ol.leaders span:first-child {
 	padding: 0;
-	background: #111
+	background: #111;
+	white-space: nowrap;
+	overflow: hidden;
+	display: inline-block;
+	text-overflow: ellipsis;
+	max-width: 80%;
 }
 
 /* Give the first icons and items a color */
@@ -77,6 +82,6 @@ li {
 	padding: .2vw 1vw .5vw 1vw;
 }
 .total {
-    /** additional padding **/
-    padding: 3vw 3vw .2vw 3vw;
+	/** additional padding **/
+	padding: 3vw 3vw .2vw 3vw;
 }
