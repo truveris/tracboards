@@ -65,7 +65,7 @@ class DefectDashboardJSON(Component):
                     AND m.due != 0
                     AND m.completed = 0
                     AND status != 'closed'
-                    AND p.value::int < 4
+                    AND cast(p.value as int) < 4
             """, (self.ticket_type,))
             blocker_count = list(cursor)[0][0]
 
